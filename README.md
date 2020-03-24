@@ -1,15 +1,24 @@
-## TNT ExpressConnect
+# CURL PHP Wrapper
 
-Welcome to my project!
+This is simple wrapper for PHP CURL.
 
-PHP client which helps developers integrate TNT EC with their application.
-This package supports following services:
-1. [Shipping](https://github.com/200MPH/tnt/blob/develop/docs/Shipping/howTo.md)
-2. [Tracking](https://github.com/200MPH/tnt/blob/develop/docs/Tracking/howTo.md)
+    <?php
+    
+    use thm\curl\Curl;
+    
+    // initialize object
+    $curl = new Curl('http://api.nbp.pl/api/exchangerates/tables/A/today/');
+    
+    // if you need pass parameters, simple call
+    $curl->setParameters(['foo' => 1, 'bar' => 2, 'baz' => 3]);
+    
+    // get results
+    $results = $curl->call();
+    
+    // if you want to call without getting result
+    $curl->call(false);
+    
+    var_dump($results);
+    var_dump($curl->getErrorNo());
+    var_dump($curl->getError());
 
-Note! This version supports PHP 7+ only.
-For PHP < 7 please install version 2.x.x
-
-Price quotation is still under development.
-
-Thanks for interesting and contribution :)
