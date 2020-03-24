@@ -22,6 +22,7 @@ class Curl {
     public function __construct(string $url)
     {
          $this->curlHandle = curl_init($url);   
+         $this->setTimeout(5);
     }
     
     /**
@@ -30,6 +31,19 @@ class Curl {
     public function __destruct()
     {
         $this->close();   
+    }
+    
+    /**
+     * Set CURL timeout.
+     * Default value is set to 5 seconds, when object initialized.
+     * 
+     * @param int $seconds
+     * @see Curl::__construct()
+     * @return Curl
+     */
+    public function setTimeout(int $seconds)
+    {
+        return $this->setopt(CURLOPT_TIMEOUT, $seconds);
     }
     
     /**
