@@ -1,8 +1,4 @@
-# CURL PHP Wrapper
-
-This is simple wrapper for PHP CURL.
-
-    <?php
+<?php
 
 use thm\curl\Curl;
 
