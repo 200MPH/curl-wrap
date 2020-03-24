@@ -1,0 +1,22 @@
+{
+    "name": "200mph/curl-wrap",
+    "type": "library",
+    "description": "Lightweight CURL wrapper for PHP CURL",
+    "keywords": ["curl", "curl wrap"],
+    "license": "MIT",
+    "homepage": "https://github.com/200MPH/curl-wrap",
+    "authors": [
+        {
+            "name": "Wojciech Brozyna",
+            "email": "wojciech.brozyna@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "thm\\curl\\": "src/"
+        }
+    }
+}
