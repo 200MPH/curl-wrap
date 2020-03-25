@@ -8,18 +8,20 @@
 
 namespace app\Vendor\Curl;
 
-class CurlException extends \Exception {
+class CurlException extends \Exception
+{
     
     /**
      * Function setopt() returned false
      * Posibble wrong parameter name
+     * @var int
      */
-    const SETOP_FAIL = 99101;
+    public const SETOP_FAIL = 99101;
     
     /**
      * Curl not initialized yet.
      * Curl::init() need to be executed first.
+     * @var int
      */
-    const CURL_INIT_FAIL = 99102;
-    
+    public const CURL_INIT_FAIL = 99102;
 }
