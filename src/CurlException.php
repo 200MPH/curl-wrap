@@ -6,7 +6,7 @@
  * @author Wojciech Brozyna <wojciech.brozyna@gmail.com>
  */
 
-namespace app\Vendor\Curl;
+namespace thm\curl;
 
 class CurlException extends \Exception
 {
