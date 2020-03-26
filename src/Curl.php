@@ -145,11 +145,12 @@ class Curl
     /**
      * Alias for exec()
      *
+     * @param bool $return [optional] Set option CURLOPT_RETURNTRANSFER. Default set to true.
      * @see Curl::exec()
      */
-    public function call()
+    public function call(bool $return = true)
     {
-        return $this->exec();
+        return $this->exec($return);
     }
     
     /**
