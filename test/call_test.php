@@ -4,7 +4,7 @@ use thm\curl\Curl;
 
 // Include auto loader for testing purpose. 
 // I assume you've already done it in your project.
-require_once '../vendor/autoload.php';
+require_once '../../vendor/autoload.php';
 
 // Initialize object
 $curl = new Curl("http://api.nbp.pl/api/exchangerates/tables/A/today/?format=json");
