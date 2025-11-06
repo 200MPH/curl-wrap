@@ -1,7 +1,7 @@
 {
     "name": "200mph/curl-wrap",
     "type": "library",
-    "description": "Lightweight CURL wrapper for PHP CURL",
+    "description": "Lightweight CURL wrapper for PHP",
     "keywords": ["curl", "curl wrap"],
     "license": "MIT",
     "homepage": "https://github.com/200MPH/curl-wrap",
@@ -12,14 +12,20 @@
         }
     ],
     "require": {
-        "php": ">=7.0"
-    },
-    "require-dev": {
-        "squizlabs/php_codesniffer": "3.*"
+        "php": "^8.3"
     },
     "autoload": {
         "psr-4": {
             "thm\\curl\\": "src/"
         }
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "^3.10",
+        "rector/rector": "^2.2"
+    },
+    "scripts": {
+        "code-sniff": "vendor/bin/phpcs -d memory_limit=512M -p src test --standard=PSR12",
+        "code-fix": "vendor/bin/phpcbf -d memory_limit=512M -p src test --standard=PSR12",
+        "rector": "vendor/bin/rector process"
     }
 }
