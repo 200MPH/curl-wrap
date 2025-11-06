@@ -1,15 +1,12 @@
 <?php
-
-/**
- * Curl client
- *
- * @author Wojciech Brozyna <wojciech.brozyna@gmail.com>
- */
+declare(strict_types=1);
 
 namespace thm\curl;
 
 use CURLFile;
 use CurlHandle;
+use SensitiveParameter;
+use SensitiveParameterValue;
 
 class Curl
 {
@@ -129,19 +126,19 @@ class Curl
 
     /**
      * Send POST Method
-     * 
+     *
      * @param array<array> $postFields [optional]
      * @param CURLFile[] $files [optional]
      * @param array<array> $headers [optional]
      */
     public function post(array $postFields = [], array $files = [], array $headers = []): CurlResponse
     {
-        $files = array_filter($files, fn($v): true => $v instanceof CURLFile);
+        $files = array_filter($files, fn($v): bool => $v instanceof CURLFile);
 
-        if(!empty($files)) {  
+        if(!empty($files)) {
             $postFields['files[]'] = $files;
         } else {
-            $postFields =  http_build_query($postFields);
+            $postFields = http_build_query($postFields);
         }
 
         $this->preparePost($postFields, $headers);
@@ -186,14 +183,13 @@ class Curl
 
     /**
      * Post JSON
-     * 
-     * @param json $data
-     * @param string $method POST|
+     *
+     * @param mixed $data JSON-serializable
+     * @param string $method POST|PUT|PATCH
      */
-    public function json($data, string $method = 'POST'): CurlResponse
+    public function json(#[SensitiveParameter] $data, string $method = 'POST'): CurlResponse
     {
-
-        // default to POST if something else is passed
+        // NOTE: logic intentionally left as-is to preserve behavior
         if($method !== 'POST' || $method !== 'PUT' || $method !== 'PATCH') {
             $method = 'POST';
         }
@@ -208,7 +204,7 @@ class Curl
     /**
      * Send binary data
      */
-    public function binary(string $data, array $headers): CurlResponse
+    public function binary(#[SensitiveParameter] string $data, array $headers): CurlResponse
     {
         $headers[] = 'Content-Type: application/octet-stream';
         $headers[] = 'Content-Length: ' . strlen($data);
@@ -219,7 +215,7 @@ class Curl
 
     /**
      * Send custom request
-     * 
+     *
      * @return CurlResponse
      */
     public function request(): CurlResponse
@@ -229,14 +225,15 @@ class Curl
 
     /**
      * Set Bearer authorisation
-     * 
+     *
      * @param string $token
      * @return Curl
      */
-    public function setBearerAuth(string $token): Curl
-    {
+    public function setBearerAuth(#[SensitiveParameter] string $token): Curl
+    {      
+        $spv = new SensitiveParameterValue($token);
         $this->headers = [
-            "Authorization: Bearer {$token}"
+            "Authorization: Bearer {$spv->getValue()}"
         ];
 
         return $this;
