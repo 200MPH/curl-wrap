@@ -15,17 +15,17 @@ class Curl
     /**
      * @var CurlHandle
      */
-    private $curlHandle = false;
+    private $curlHandle;
 
     /**
      * Start request time
      */
-    private $timeStart = 0;
+    private float $timeStart = 0;
 
     /**
      * Stop request time
      */
-    private $timeStop = 0;
+    private float $timeStop = 0;
 
     /**
      * Init cURL
@@ -34,6 +34,12 @@ class Curl
     public function __construct(string $url)
     {
         $this->curlHandle = curl_init($url);
+
+        if(!$this->curlHandle)
+        {
+            $this->throwNotInitializedException();
+        }
+
         $this->setTimeout(5);
     }
 
@@ -69,10 +75,6 @@ class Curl
      */
     public function setopt(int $curlOption, mixed $curlOptionValue): Curl
     {
-        if ($this->curlHandle === null) {
-            $this->throwNotInitializedException();
-        }
-
         $ok = curl_setopt($this->curlHandle, $curlOption, $curlOptionValue);
         if ($ok !== true) {
             $errno = curl_errno($this->curlHandle);
@@ -82,7 +84,8 @@ class Curl
                 'curl_setopt failed for option %d (%s). errno=%d error="%s"',
                 $curlOption,
                 $errno,
-                $error
+                $error,
+                $errno
             );
 
             throw new CurlException($msg, CurlException::SETOP_FAIL);
@@ -96,7 +99,7 @@ class Curl
      * This function will let you pass parameters fast and easy,
      * so no need to set additional CURL options.
      *
-     * @param array $params
+     * @param array<mixed> $params
      * @return Curl
      */
     public function setParameters(array $params): Curl
@@ -112,11 +115,7 @@ class Curl
      */
     public function getErrorNo(): int
     {
-        if ($this->curlHandle !== false) {
-            return (curl_errno($this->curlHandle));
-        } else {
-            $this->throwNotInitializedException();
-        }
+        return curl_errno($this->curlHandle);
     }
 
     /**
@@ -126,11 +125,7 @@ class Curl
      */
     public function getError(): string
     {
-        if ($this->curlHandle !== false) {
-            return (curl_error($this->curlHandle));
-        } else {
-            $this->throwNotInitializedException();
-        }
+        return curl_error($this->curlHandle);
     }
 
     /**
@@ -140,32 +135,27 @@ class Curl
      */
     public function close(): void
     {
-        if ($this->curlHandle !== false) {
-            curl_close($this->curlHandle);
-            $this->curlHandle = false;
-        }
+        curl_close($this->curlHandle);
     }
 
     /**
      * CURL execute - get results
      *
      * @param bool $return [optional] Set option CURLOPT_RETURNTRANSFER. Default set to true.
-     * @return mixed <b>TRUE</b> on success or <b>FALSE</b> on failure. However, if the <b>CURLOPT_RETURNTRANSFER</b>
+     * @return bool|string <b>TRUE</b> on success or <b>FALSE</b> on failure. However, if the <b>CURLOPT_RETURNTRANSFER</b>
      * option is set, it will return the result on success, <b>FALSE</b> on failure.
      */
     public function exec(bool $return = true): bool|string
     {
-        if ($this->curlHandle !== false) {
-            $this->timeStart = microtime(true);
-            if ($return === true) {
-                $this->setopt(CURLOPT_RETURNTRANSFER, 1);
-            }
-            $response = curl_exec($this->curlHandle);
-            $this->timeStop = microtime(true);
-            return $response;
-        } else {
-            $this->throwNotInitializedException();
+        $this->timeStart = microtime(true);
+
+        if ($return === true) {
+            $this->setopt(CURLOPT_RETURNTRANSFER, 1);
         }
+
+        $response = curl_exec($this->curlHandle);
+        $this->timeStop = microtime(true);
+        return $response;
     }
 
     /**
@@ -201,7 +191,7 @@ class Curl
     /**
      * Throw Exception
      *
-     * @throws Exception cURL not initialized yet
+     * @throws CurlException cURL not initialized yet
      */
     private function throwNotInitializedException(): never
     {

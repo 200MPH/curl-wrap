@@ -23,6 +23,7 @@ $results = $curl->call();
 // $curl->callQuiet();
 
 var_dump($results);
-var_dump($curl->getResponseTime());
-var_dump($curl->getErrorNo());
-var_dump($curl->getError());
+print(PHP_EOL);
+print('Time: ' . $curl->getResponseTime() . PHP_EOL);
+print('Error No: ' . $curl->getErrorNo() . PHP_EOL);
+print('Error message: ' . $curl->getError() . PHP_EOL);
