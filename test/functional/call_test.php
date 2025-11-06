@@ -2,8 +2,7 @@
 
 use thm\curl\Curl;
 
-// Include auto loader for testing purpose. 
-// I assume you've already done it in your project.
+// Include auto loader for testing purpose.
 require_once '../../vendor/autoload.php';
 
 // Initialize object
@@ -20,7 +19,10 @@ $results = $curl->call();
 
 // If you want to call without getting results
 // $curl->call(false);
+// or
+// $curl->callQuiet();
 
 var_dump($results);
+var_dump($curl->getResponseTime());
 var_dump($curl->getErrorNo());
 var_dump($curl->getError());
