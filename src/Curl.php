@@ -136,7 +136,7 @@ class Curl
      */
     public function post(array $postFields = [], array $files = [], array $headers = []): CurlResponse
     {
-        $files = array_filter($files, fn($v) => $v instanceof CURLFile);
+        $files = array_filter($files, fn($v): true => $v instanceof CURLFile);
 
         if(!empty($files)) {  
             $postFields['files[]'] = $files;
