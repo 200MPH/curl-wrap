@@ -198,11 +198,11 @@ class Curl
             $method = 'POST';
         }
 
-
         $headers[] = 'Content-Type: application/json';
         $headers[] = 'Accept: application/json';
+        $this->preparePost($data, $headers);
         $this->setopt(CURLOPT_CUSTOMREQUEST, $method);
-        return $this->post($data, [], $headers);
+        return $this->request();
     }
 
     /**
