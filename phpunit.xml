@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+  bootstrap="vendor/autoload.php"
+  colors="true"
+>
+  <testsuites>
+    <testsuite name="CURL Wrap unit tests">
+      <directory>tests</directory>
+    </testsuite>
+  </testsuites>
+
+  <source>
+    <include>
+      <directory suffix=".php">src</directory>
+    </include>
+    <exclude>
+      <directory>vendor</directory>
+      <directory>tests</directory>
+    </exclude>
+  </source>
+
+  <coverage>
+    <report>
+      <!-- Pretty HTML report -->
+      <!-- <html outputDirectory="build/coverage" lowUpperBound="50" highLowerBound="90"/> -->
+      <!-- Console summary -->
+      <text outputFile="php://stdout"/>
+      <!-- Clover XML for CI tools (Codecov/Sonar/etc.) -->
+      <clover outputFile="build/coverage/clover.xml"/>
+    </report>
+  </coverage>
+</phpunit>

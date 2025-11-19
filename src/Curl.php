@@ -10,6 +10,13 @@ use SensitiveParameterValue;
 
 class Curl
 {
+
+    public const GET = 'GET';
+    public const POST = 'POST';
+    public const PUT = 'PUT';
+    public const PATCH = 'PATCH';
+    public const DELETE = 'DELETE';
+
     /**
      * @var CurlHandle
      */
@@ -133,10 +140,12 @@ class Curl
      */
     public function post(array $postFields = [], array $files = [], array $headers = []): CurlResponse
     {
-        $files = array_filter($files, fn($v): bool => $v instanceof CURLFile);
+        $files = array_filter($files, fn($v, $k): bool => $v instanceof CURLFile, ARRAY_FILTER_USE_BOTH);
 
         if(!empty($files)) {
-            $postFields['files[]'] = $files;
+            foreach($files as $index => $file) {
+                $postFields["files[$index]"] = $file;
+            }
         } else {
             $postFields = http_build_query($postFields);
         }
@@ -204,7 +213,7 @@ class Curl
     /**
      * Send binary data
      */
-    public function binary(#[SensitiveParameter] string $data, array $headers): CurlResponse
+    public function binary(#[SensitiveParameter] string $data, array $headers = []): CurlResponse
     {
         $headers[] = 'Content-Type: application/octet-stream';
         $headers[] = 'Content-Length: ' . strlen($data);

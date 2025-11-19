@@ -8,22 +8,14 @@ require_once '../../vendor/autoload.php';
 // Initialize object
 $curl = new Curl("http://api.nbp.pl/api/exchangerates/tables/A/today/?format=json");
 
-// Change default timeout (5 seconds)
+// Change default timeout
 $curl->setTimeout(2);
 
-// If you need pass parameters, simple call
-// $curl->setParameters(['foo' => 1, 'bar' => 2, 'baz' => 3]);
+// GET method
+$results = $curl->get();
 
-// Get results
-$results = $curl->call();
-
-// If you want to call without getting results
-// $curl->call(false);
-// or
-// $curl->callQuiet();
-
-var_dump($results);
+var_dump($results->getBody());
 print(PHP_EOL);
-print('Time: ' . $curl->getResponseTime() . PHP_EOL);
-print('Error No: ' . $curl->getErrorNo() . PHP_EOL);
-print('Error message: ' . $curl->getError() . PHP_EOL);
+print('Time: ' . $results->getResponseTime() . PHP_EOL);
+print('Error No: ' . $results->getErrorNo() . PHP_EOL);
+print('Error message: ' . $results->getError() . PHP_EOL);
