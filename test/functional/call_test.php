@@ -14,7 +14,12 @@ $curl->setTimeout(2);
 // GET method
 $results = $curl->get();
 
-var_dump($results->getBody());
+//$results = $curl->post();
+//$results = $curl->put();
+//$results = $curl->patch();
+//$results = $curl->delete();
+
+print_r($results->getBody());
 print(PHP_EOL);
 print('Time: ' . $results->getResponseTime() . PHP_EOL);
 print('Error No: ' . $results->getErrorNo() . PHP_EOL);
