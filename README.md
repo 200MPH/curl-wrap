@@ -25,6 +25,12 @@ This is simple wrapper for PHP CURL.
     //$response = $curl->post();
     //$response = $curl->post($params, $files, $headers);
 
+    // SEND JSON
+    //$response = $curl->json($json);
+
+    // Binary
+    //$response = $curl->binary($data);
+
     // PATCH
     //$response = $curl->patch();
 
