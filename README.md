@@ -1,4 +1,4 @@
-# CURL PHP Wrapper
+# PHP CURL Wrapper
 
 ![coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)
 
