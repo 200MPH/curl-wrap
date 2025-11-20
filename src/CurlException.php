@@ -6,6 +6,8 @@
  * @author Wojciech Brozyna <wojciech.brozyna@gmail.com>
  */
 
+declare(strict_types=1);
+
 namespace thm\curl;
 
 class CurlException extends \Exception

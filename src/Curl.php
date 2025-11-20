@@ -1,31 +1,31 @@
 <?php
 
-/**
- * Curl client
- *
- * @author Wojciech Brozyna <wojciech.brozyna@gmail.com>
- */
+declare(strict_types=1);
 
 namespace thm\curl;
 
+use CURLFile;
 use CurlHandle;
+use SensitiveParameter;
+use SensitiveParameterValue;
 
 class Curl
 {
+    public const GET = 'GET';
+    public const POST = 'POST';
+    public const PUT = 'PUT';
+    public const PATCH = 'PATCH';
+    public const DELETE = 'DELETE';
+
     /**
      * @var CurlHandle
      */
-    private $curlHandle = false;
+    private $curlHandle;
 
     /**
-     * Start request time
+     * @var array<mixed>
      */
-    private $timeStart = 0;
-
-    /**
-     * Stop request time
-     */
-    private $timeStop = 0;
+    private array $headers = [];
 
     /**
      * Init cURL
@@ -34,6 +34,12 @@ class Curl
     public function __construct(string $url)
     {
         $this->curlHandle = curl_init($url);
+
+        if (!$this->curlHandle) {
+            $this->throwNotInitializedException();
+        }
+
+        // set default timeout to 5 seconds
         $this->setTimeout(5);
     }
 
@@ -69,10 +75,6 @@ class Curl
      */
     public function setopt(int $curlOption, mixed $curlOptionValue): Curl
     {
-        if ($this->curlHandle === null) {
-            $this->throwNotInitializedException();
-        }
-
         $ok = curl_setopt($this->curlHandle, $curlOption, $curlOptionValue);
         if ($ok !== true) {
             $errno = curl_errno($this->curlHandle);
@@ -82,7 +84,8 @@ class Curl
                 'curl_setopt failed for option %d (%s). errno=%d error="%s"',
                 $curlOption,
                 $errno,
-                $error
+                $error,
+                $errno
             );
 
             throw new CurlException($msg, CurlException::SETOP_FAIL);
@@ -96,7 +99,7 @@ class Curl
      * This function will let you pass parameters fast and easy,
      * so no need to set additional CURL options.
      *
-     * @param array $params
+     * @param array<string, mixed> $params
      * @return Curl
      */
     public function setParameters(array $params): Curl
@@ -106,102 +109,174 @@ class Curl
     }
 
     /**
-     * Get CURL error number
-     *
-     * @return int Error number
-     */
-    public function getErrorNo(): int
-    {
-        if ($this->curlHandle !== false) {
-            return (curl_errno($this->curlHandle));
-        } else {
-            $this->throwNotInitializedException();
-        }
-    }
-
-    /**
-     * Get CURL error string
-     *
-     * @return string Error string
-     */
-    public function getError(): string
-    {
-        if ($this->curlHandle !== false) {
-            return (curl_error($this->curlHandle));
-        } else {
-            $this->throwNotInitializedException();
-        }
-    }
-
-    /**
      * Close CURL session
      *
      * @return void
      */
     public function close(): void
     {
-        if ($this->curlHandle !== false) {
-            curl_close($this->curlHandle);
-            $this->curlHandle = false;
-        }
+        curl_close($this->curlHandle);
     }
 
     /**
-     * CURL execute - get results
-     *
-     * @param bool $return [optional] Set option CURLOPT_RETURNTRANSFER. Default set to true.
-     * @return mixed <b>TRUE</b> on success or <b>FALSE</b> on failure. However, if the <b>CURLOPT_RETURNTRANSFER</b>
-     * option is set, it will return the result on success, <b>FALSE</b> on failure.
+     * Send GET Method
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
-    public function exec(bool $return = true): bool|string
+    public function get(array $headers = []): CurlResponse
     {
-        if ($this->curlHandle !== false) {
-            $this->timeStart = microtime(true);
-            if ($return === true) {
-                $this->setopt(CURLOPT_RETURNTRANSFER, 1);
+        $this->setopt(CURLOPT_RETURNTRANSFER, 1);
+        $this->setopt(CURLOPT_HTTPHEADER, $headers);
+
+        return new CurlResponse($this->curlHandle);
+    }
+
+    /**
+     * Send POST Method
+     *
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
+     */
+    public function post(array $postFields = [], array $files = [], array $headers = []): CurlResponse
+    {
+        // @phpstan-ignore-next-line
+        $files = array_filter($files, fn($v, $k): bool => $v instanceof CURLFile, ARRAY_FILTER_USE_BOTH);
+
+        if (!empty($files)) {
+            foreach ($files as $index => $file) {
+                $postFields["files[$index]"] = $file;
             }
-            $response = curl_exec($this->curlHandle);
-            $this->timeStop = microtime(true);
-            return $response;
         } else {
-            $this->throwNotInitializedException();
+            $postFields = http_build_query($postFields);
         }
+
+        $this->preparePost($postFields, $headers);
+        return new CurlResponse($this->curlHandle);
     }
 
     /**
-     * Alias for exec()
+     * Send PUT Method
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
+     */
+    public function put(array $postFields = [], array $files = [], array $headers = []): CurlResponse
+    {
+        $this->setopt(CURLOPT_CUSTOMREQUEST, 'PUT');
+        return $this->post($postFields, $files, $headers);
+    }
+
+    /**
+     * Send PATCH Method
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
+     */
+    public function patch(array $postFields = [], array $files = [], array $headers = []): CurlResponse
+    {
+        $this->setopt(CURLOPT_CUSTOMREQUEST, 'PATCH');
+        return $this->post($postFields, $files, $headers);
+    }
+
+    /**
+     * Send DELETE Method
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
+     */
+    public function delete(array $postFields = [], array $files = [], array $headers = []): CurlResponse
+    {
+        $this->setopt(CURLOPT_CUSTOMREQUEST, 'DELETE');
+        return $this->post($postFields, $files, $headers);
+    }
+
+    /**
+     * Post JSON
      *
-     * @param bool $return [optional] Set option CURLOPT_RETURNTRANSFER. Default set to true.
-     * @see Curl::exec()
+     * @param mixed $data JSON-serializable
+     * @param string $method POST|PUT|PATCH
+     * @return CurlResponse
      */
-    public function call(bool $return = true): bool|string
+    public function json(#[SensitiveParameter] $data, string $method = 'POST'): CurlResponse
     {
-        return $this->exec($return);
+        // NOTE: logic intentionally left as-is to preserve behavior
+        if ($method !== 'POST' && $method !== 'PUT' && $method !== 'PATCH') {
+            $method = 'POST';
+        }
+
+        $headers[] = 'Content-Type: application/json';
+        $headers[] = 'Accept: application/json';
+        $this->preparePost($data, $headers);
+        $this->setopt(CURLOPT_CUSTOMREQUEST, $method);
+        return $this->request();
     }
 
     /**
-     * Quiet call
-     * @return bool
+     * Send binary data
+     * @param mixed $data
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
-    public function callQuiet(): bool
+    public function binary(#[SensitiveParameter] mixed $data, array $headers = []): CurlResponse
     {
-        return $this->call(false);
+        $headers[] = 'Content-Type: application/octet-stream';
+        $headers[] = 'Content-Length: ' . strlen($data);
+        $this->preparePost($data, $headers);
+
+        return new CurlResponse($this->curlHandle);
     }
 
     /**
-     * Response time
-     * @return float
+     * Send custom request
+     *
+     * @return CurlResponse
      */
-    public function getResponseTime(): float
+    public function request(): CurlResponse
     {
-        $time = $this->timeStop - $this->timeStart;
-        return round($time, 3);
+        return new CurlResponse($this->curlHandle);
+    }
+
+    /**
+     * Set Bearer authorisation
+     *
+     * @param string $token
+     * @return Curl
+     */
+    public function setBearerAuth(#[SensitiveParameter] string $token): Curl
+    {
+        $spv = new SensitiveParameterValue($token);
+        $this->headers = [
+            "Authorization: Bearer {$spv->getValue()}"
+        ];
+
+        return $this;
+    }
+
+    /**
+     * Prepare POST request
+     * @param string|array<string, mixed> $postFields
+     * @param array<int, mixed> $headers
+     * @return void
+     */
+    private function preparePost(string|array $postFields, array $headers): void
+    {
+        $headers = array_merge($headers, $this->headers);
+        $headers = array_unique($headers);
+        $this->setopt(CURLOPT_RETURNTRANSFER, 1);
+        $this->setopt(CURLOPT_HTTPHEADER, $headers);
+        $this->setopt(CURLOPT_POST, true);
+        $this->setopt(CURLOPT_POSTFIELDS, $postFields);
     }
 
     /**
      * Throw Exception
      *
-     * @throws Exception cURL not initialized yet
+     * @throws CurlException cURL not initialized yet
      */
     private function throwNotInitializedException(): never
     {
