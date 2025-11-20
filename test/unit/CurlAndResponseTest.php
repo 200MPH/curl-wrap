@@ -1,13 +1,13 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * Test doubles for cURL that live in the SAME namespace as the code under test (thm\curl),
  * so unqualified calls (curl_exec, curl_getinfo, etc.) resolve here first.
  *
  * We also expose tiny helpers to reset and read captured state without touching $GLOBALS.
  */
+
+declare(strict_types=1);
 
 namespace thm\curl {
     /** @var array<int, mixed> */
@@ -109,7 +109,6 @@ namespace thm\test {
 
     final class CurlAndResponseTest extends TestCase
     {
-
         private string $url = 'http://unit.test';
 
         protected function setUp(): void
@@ -335,7 +334,10 @@ namespace thm\test {
         {
             yield 'json data' => ['json', 'json($data) must be marked with #[SensitiveParameter]'];
             yield 'binary data' => ['binary', 'binary($data) must be marked with #[SensitiveParameter]'];
-            yield 'bearer token' => ['setBearerAuth', 'setBearerAuth($token) must be marked with #[SensitiveParameter]'];
+            yield 'bearer token' => [
+                'setBearerAuth',
+                'setBearerAuth($token) must be marked with #[SensitiveParameter]'
+            ];
         }
 
         public function testCurlResponseCollectsBodyStatusInfoAndTiming(): void

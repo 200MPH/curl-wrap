@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace thm\curl;
 
 use CurlHandle;
 
-class CurlResponse {
-
-    private  $response = null;
+class CurlResponse
+{
+    private ?string $response = null;
     private float $timeStart = 0;
     private float $timeStop = 0;
 
@@ -29,6 +30,9 @@ class CurlResponse {
         return $this->response ?? null;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getInfo(): array
     {
         return curl_getinfo($this->handle);

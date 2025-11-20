@@ -1,11 +1,12 @@
 <?php
-declare(strict_types=1);
 
 /**
  * Curl Exception
  *
  * @author Wojciech Brozyna <wojciech.brozyna@gmail.com>
  */
+
+declare(strict_types=1);
 
 namespace thm\curl;
 

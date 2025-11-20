@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace thm\curl;
@@ -10,7 +11,6 @@ use SensitiveParameterValue;
 
 class Curl
 {
-
     public const GET = 'GET';
     public const POST = 'POST';
     public const PUT = 'PUT';
@@ -23,7 +23,7 @@ class Curl
     private $curlHandle;
 
     /**
-     * @var array
+     * @var array<mixed>
      */
     private array $headers = [];
 
@@ -35,8 +35,7 @@ class Curl
     {
         $this->curlHandle = curl_init($url);
 
-        if(!$this->curlHandle)
-        {
+        if (!$this->curlHandle) {
             $this->throwNotInitializedException();
         }
 
@@ -100,7 +99,7 @@ class Curl
      * This function will let you pass parameters fast and easy,
      * so no need to set additional CURL options.
      *
-     * @param array<mixed> $params
+     * @param array<string, mixed> $params
      * @return Curl
      */
     public function setParameters(array $params): Curl
@@ -121,12 +120,13 @@ class Curl
 
     /**
      * Send GET Method
-     * @param array<array> $headers [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
     public function get(array $headers = []): CurlResponse
     {
         $this->setopt(CURLOPT_RETURNTRANSFER, 1);
-        $this->setopt(CURLOPT_HTTPHEADER , $headers);
+        $this->setopt(CURLOPT_HTTPHEADER, $headers);
 
         return new CurlResponse($this->curlHandle);
     }
@@ -134,16 +134,18 @@ class Curl
     /**
      * Send POST Method
      *
-     * @param array<array> $postFields [optional]
-     * @param CURLFile[] $files [optional]
-     * @param array<array> $headers [optional]
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
     public function post(array $postFields = [], array $files = [], array $headers = []): CurlResponse
     {
+        // @phpstan-ignore-next-line
         $files = array_filter($files, fn($v, $k): bool => $v instanceof CURLFile, ARRAY_FILTER_USE_BOTH);
 
-        if(!empty($files)) {
-            foreach($files as $index => $file) {
+        if (!empty($files)) {
+            foreach ($files as $index => $file) {
                 $postFields["files[$index]"] = $file;
             }
         } else {
@@ -156,9 +158,10 @@ class Curl
 
     /**
      * Send PUT Method
-     * @param array<array> $postFields [optional]
-     * @param CURLFile[] $files [optional]
-     * @param array<array> $headers [optional]
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
     public function put(array $postFields = [], array $files = [], array $headers = []): CurlResponse
     {
@@ -168,9 +171,10 @@ class Curl
 
     /**
      * Send PATCH Method
-     * @param array<array> $postFields [optional]
-     * @param CURLFile[] $files [optional]
-     * @param array<array> $headers [optional]
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
     public function patch(array $postFields = [], array $files = [], array $headers = []): CurlResponse
     {
@@ -180,9 +184,10 @@ class Curl
 
     /**
      * Send DELETE Method
-     * @param array<array> $postFields [optional]
-     * @param CURLFile[] $files [optional]
-     * @param array<array> $headers [optional]
+     * @param array<string, mixed> $postFields [optional]
+     * @param array<CURLFile> $files [optional]
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
     public function delete(array $postFields = [], array $files = [], array $headers = []): CurlResponse
     {
@@ -195,11 +200,12 @@ class Curl
      *
      * @param mixed $data JSON-serializable
      * @param string $method POST|PUT|PATCH
+     * @return CurlResponse
      */
     public function json(#[SensitiveParameter] $data, string $method = 'POST'): CurlResponse
     {
         // NOTE: logic intentionally left as-is to preserve behavior
-        if($method !== 'POST' || $method !== 'PUT' || $method !== 'PATCH') {
+        if ($method !== 'POST' && $method !== 'PUT' && $method !== 'PATCH') {
             $method = 'POST';
         }
 
@@ -212,8 +218,11 @@ class Curl
 
     /**
      * Send binary data
+     * @param mixed $data
+     * @param array<int, mixed> $headers [optional]
+     * @return CurlResponse
      */
-    public function binary(#[SensitiveParameter] string $data, array $headers = []): CurlResponse
+    public function binary(#[SensitiveParameter] mixed $data, array $headers = []): CurlResponse
     {
         $headers[] = 'Content-Type: application/octet-stream';
         $headers[] = 'Content-Length: ' . strlen($data);
@@ -239,7 +248,7 @@ class Curl
      * @return Curl
      */
     public function setBearerAuth(#[SensitiveParameter] string $token): Curl
-    {      
+    {
         $spv = new SensitiveParameterValue($token);
         $this->headers = [
             "Authorization: Bearer {$spv->getValue()}"
@@ -250,17 +259,18 @@ class Curl
 
     /**
      * Prepare POST request
-     * @mixed $postFields
-     * @param array $headers
+     * @param string|array<string, mixed> $postFields
+     * @param array<int, mixed> $headers
+     * @return void
      */
-    private function preparePost($postFields, array $headers): void
+    private function preparePost(string|array $postFields, array $headers): void
     {
         $headers = array_merge($headers, $this->headers);
         $headers = array_unique($headers);
         $this->setopt(CURLOPT_RETURNTRANSFER, 1);
-        $this->setopt(CURLOPT_HTTPHEADER , $headers);
-        $this->setopt(CURLOPT_POST , true);
-        $this->setopt(CURLOPT_POSTFIELDS , $postFields);
+        $this->setopt(CURLOPT_HTTPHEADER, $headers);
+        $this->setopt(CURLOPT_POST, true);
+        $this->setopt(CURLOPT_POSTFIELDS, $postFields);
     }
 
     /**
