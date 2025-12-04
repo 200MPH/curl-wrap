@@ -205,7 +205,7 @@ class Curl
     public function json(#[SensitiveParameter] $data, string $method = 'POST'): CurlResponse
     {
         // NOTE: logic intentionally left as-is to preserve behavior
-        if ($method !== 'POST' && $method !== 'PUT' && $method !== 'PATCH') {
+        if (!in_array($method, ['POST', 'PUT', 'PATCH'], true)) {
             $method = 'POST';
         }
 
@@ -225,7 +225,7 @@ class Curl
     public function binary(#[SensitiveParameter] mixed $data, array $headers = []): CurlResponse
     {
         $headers[] = 'Content-Type: application/octet-stream';
-        $headers[] = 'Content-Length: ' . strlen($data);
+        $headers[] = 'Content-Length: ' . strlen((string) $data);
         $this->preparePost($data, $headers);
 
         return new CurlResponse($this->curlHandle);

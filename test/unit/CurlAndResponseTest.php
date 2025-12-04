@@ -255,7 +255,7 @@ namespace thm\test {
             $this->assertIsArray($headers);
             $this->assertContains('Content-Type: application/json', $headers);
             $this->assertContains('Accept: application/json', $headers);
-            $returnedData = json_decode($return, true);
+            $returnedData = json_decode((string) $return, true);
             $this->assertEquals($returnedData, $data);
         }
 
