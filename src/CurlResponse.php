@@ -19,12 +19,21 @@ class CurlResponse
         $this->timeStop = microtime(true);
     }
 
+    /**
+     * Get status code
+     * @return int
+     */
     public function getStatus(): int
     {
         $statusCode = curl_getinfo($this->handle, CURLINFO_HTTP_CODE);
         return $statusCode;
     }
 
+    /**
+     * Get body
+     *
+     * @return null|string
+     */
     public function getBody(): ?string
     {
         return $this->response ?? null;
