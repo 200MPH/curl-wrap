@@ -15,7 +15,8 @@ class CurlResponse
     public function __construct(private readonly CurlHandle $handle)
     {
         $this->timeStart = microtime(true);
-        $this->response = curl_exec($this->handle);
+        $result = curl_exec($this->handle);
+        $this->response = is_string($result) ? $result : null;
         $this->timeStop = microtime(true);
     }
 
