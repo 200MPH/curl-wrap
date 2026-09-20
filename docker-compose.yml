@@ -1,5 +1,5 @@
 services:
-  php84:
+  php85:
     container_name: curl-wrap
     build: ./docker
     working_dir: /app
