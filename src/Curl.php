@@ -44,14 +44,6 @@ class Curl
     }
 
     /**
-     * Destructor
-     */
-    public function __destruct()
-    {
-        $this->close();
-    }
-
-    /**
      * Set CURL timeout.
      * Default value is set to 5 seconds, when object initialized.
      *
@@ -109,13 +101,12 @@ class Curl
     }
 
     /**
-     * Close CURL session
+     * Retained for compatibility; cURL handles are freed automatically.
      *
      * @return void
      */
     public function close(): void
     {
-        curl_close($this->curlHandle);
     }
 
     /**

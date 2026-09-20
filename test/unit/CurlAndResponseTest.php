@@ -46,11 +46,6 @@ namespace thm\curl {
         return \curl_init($url ?? '');
     }
 
-    function curl_close($handle): void
-    {
-        // no-op
-    }
-
     function curl_setopt($handle, int $option, $value): bool
     {
 
@@ -156,6 +151,19 @@ namespace thm\test {
             $this->assertEquals(30, $opts[\CURLOPT_TIMEOUT]);
             $this->expectException(TypeError::class);
             $curl->setTimeout("30"); // it must be string for testing purpose
+        }
+
+        public function testClosePreservesHandleForExistingCallers(): void
+        {
+            $curl = new Curl($this->url);
+            $response = $curl->get();
+
+            $curl->close();
+            $curl->close();
+
+            $this->assertSame(200, $response->getStatus());
+            $this->assertSame($curl, $curl->setTimeout(10));
+            $this->assertSame(10, \thm\curl\__get_setopts()[\CURLOPT_TIMEOUT]);
         }
 
         public function testGetMethod(): void
